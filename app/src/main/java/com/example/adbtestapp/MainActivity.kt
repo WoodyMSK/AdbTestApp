@@ -24,30 +24,34 @@ class MainActivity : AppCompatActivity() {
         with(binding) {
             bVolumeInc.setOnClickListener {
                 runAdb("input keyevent 24", this@MainActivity)
+                Toast.makeText(this@MainActivity, "VolumeInc", Toast.LENGTH_SHORT).show()
             }
             bVolumeDec.setOnClickListener {
                 runAdb("input keyevent 25", this@MainActivity)
+                Toast.makeText(this@MainActivity, "VolumeDec", Toast.LENGTH_SHORT).show()
             }
             bInstall.setOnClickListener {
                 runAdb(
                     "pm install -r -d -i org.telegram.messenger.web --user 0 /storage/emulated/0/Download/Telegram.apk",
                     this@MainActivity
                 )
+                Toast.makeText(this@MainActivity, "Install Telegram", Toast.LENGTH_SHORT).show()
             }
             bUninstall.setOnClickListener {
                 runAdb(
                     "pm uninstall -k --user 0 ru.rutube.app",
                     this@MainActivity
                 )
+                Toast.makeText(this@MainActivity, "Uninstall RuTube", Toast.LENGTH_SHORT).show()
             }
-            bUninstall.setOnClickListener {
+            bUninstallPicture.setOnClickListener {
                 runAdb(
-                    "rm /storage/emulated/0/Download/1.jpg",
+                    "rm -r /storage/emulated/0/Download/1.jpg",
                     this@MainActivity
                 )
+                Toast.makeText(this@MainActivity, "Uninstall 1.jpg", Toast.LENGTH_SHORT).show()
             }
         }
-
     }
 }
 
