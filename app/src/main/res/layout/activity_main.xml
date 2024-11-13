@@ -35,6 +35,13 @@
         android:text="Удалить RuTube" />
 
     <com.google.android.material.button.MaterialButton
+        android:id="@+id/bUninstallByPM"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="16dp"
+        android:text="Удалить RuTube by PM" />
+
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/bUninstallPicture"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

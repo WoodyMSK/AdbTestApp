@@ -1,50 +1,72 @@
 package com.example.adbtestapp
 
+import android.app.PendingIntent
+import android.content.Context
+import android.content.Intent
+import android.content.IntentSender
+import android.content.pm.PackageInstaller
 import android.os.Bundle
 import android.util.Log
+import android.widget.Button
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
-import com.example.adbtestapp.databinding.ActivityMainBinding
 import java.io.BufferedReader
 import java.io.InputStreamReader
 
 class MainActivity : AppCompatActivity() {
-
-    private lateinit var binding: ActivityMainBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContentView(R.layout.activity_main)
 
-        binding = ActivityMainBinding.inflate(layoutInflater)
-            .also { setContentView(it.root) }
-
-        with(binding) {
-            bVolumeInc.setOnClickListener {
+        val volumeInc: Button = findViewById<Button?>(R.id.bVolumeInc).apply {
+            setOnClickListener {
                 val process = Runtime.getRuntime().exec("input keyevent 24")
                 val bufferedReader = BufferedReader(InputStreamReader(process.inputStream))
                 Toast.makeText(this@MainActivity, "VolumeInc", Toast.LENGTH_SHORT).show()
             }
-            bVolumeDec.setOnClickListener {
+        }
+
+        val volumeDec: Button = findViewById<Button?>(R.id.bVolumeDec).apply {
+            setOnClickListener {
                 val process = Runtime.getRuntime().exec("input keyevent 25")
                 val bufferedReader = BufferedReader(InputStreamReader(process.inputStream))
                 Toast.makeText(this@MainActivity, "VolumeDec", Toast.LENGTH_SHORT).show()
             }
-            bInstall.setOnClickListener {
+        }
+
+        val install: Button = findViewById<Button?>(R.id.bInstall).apply {
+            setOnClickListener {
                 runAdb("pm install -r -d -i org.telegram.messenger.web --user 0 /storage/emulated/0/Download/Telegram.apk")
                 Toast.makeText(this@MainActivity, "Install Telegram", Toast.LENGTH_SHORT).show()
             }
-            bUninstall.setOnClickListener {
+        }
+
+        val unInstall: Button = findViewById<Button?>(R.id.bUninstall).apply {
+            setOnClickListener {
                 runAdb("pm uninstall -k ru.rutube.app")
                 Toast.makeText(this@MainActivity, "Uninstall RuTube", Toast.LENGTH_SHORT).show()
             }
-            bUninstallPicture.setOnClickListener {
+        }
+
+        val unInstallByPM: Button = findViewById<Button?>(R.id.bUninstallByPM).apply {
+            setOnClickListener {
+                uninstallApp("pm uninstall -k ru.rutube.app", this@MainActivity)
+                Toast.makeText(this@MainActivity, "Uninstall RuTube", Toast.LENGTH_SHORT).show()
+            }
+        }
+
+        val unInstallByPicture: Button = findViewById<Button?>(R.id.bUninstallPicture).apply {
+            setOnClickListener {
                 runAdb("rm -r /storage/emulated/0/Download/1.jpg")
                 Toast.makeText(this@MainActivity, "Uninstall 1.jpg", Toast.LENGTH_SHORT).show()
             }
-            bSuperUser.setOnClickListener {
+        }
+
+        val superUser: Button = findViewById<Button?>(R.id.bSuperUser).apply {
+            setOnClickListener {
                 runAdb("su")
                 Toast.makeText(this@MainActivity, "SuperUser", Toast.LENGTH_SHORT).show()
             }
@@ -85,4 +107,33 @@ private fun runAdb(command: String) {
     } catch (e: Exception) {
         Log.i("ADB_COMMAND", e.message.toString())
     }
+}
+
+fun uninstallApp(packageName: String, context: Context) {
+    Log.d("ADB_COMMAND", "Uninstalling package $packageName")
+
+    try {
+        val packageInstaller: PackageInstaller = context.packageManager.packageInstaller
+        packageInstaller.uninstall(
+            packageName,
+            createUninstallIntentSender(context, packageName)
+        )
+    } catch (e: Exception) {
+        Log.i("ADB_COMMAND", e.message.toString())
+        e.printStackTrace()
+    }
+}
+
+
+fun createUninstallIntentSender(
+    context: Context,
+    packageName: String
+): IntentSender {
+    val intent = Intent("1")
+    intent.putExtra(Intent.EXTRA_PACKAGE_NAME, packageName)
+    val pendingIntent = PendingIntent.getBroadcast(
+        context, 0,
+        intent, PendingIntent.FLAG_IMMUTABLE
+    )
+    return pendingIntent.intentSender
 }
