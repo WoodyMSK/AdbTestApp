@@ -3,137 +3,228 @@ package com.example.adbtestapp
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
-import android.content.IntentSender
 import android.content.pm.PackageInstaller
 import android.os.Bundle
 import android.util.Log
 import android.widget.Button
-import android.widget.Toast
-import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
-import java.io.BufferedReader
-import java.io.InputStreamReader
+import androidx.core.content.FileProvider
+import java.io.BufferedInputStream
+import java.io.File
+import java.io.FileInputStream
+import java.io.FileOutputStream
+import java.io.IOException
+import java.io.InputStream
+import java.io.OutputStream
+import java.net.URL
+
 
 class MainActivity : AppCompatActivity() {
+    val TAG: String = "com.example.adbtestapp.MainActivity"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
         setContentView(R.layout.activity_main)
 
-        val volumeInc: Button = findViewById<Button?>(R.id.bVolumeInc).apply {
+        val installApk: Button = findViewById<Button?>(R.id.bInstall).apply {
             setOnClickListener {
-                val process = Runtime.getRuntime().exec("input keyevent 24")
-                val bufferedReader = BufferedReader(InputStreamReader(process.inputStream))
-                Toast.makeText(this@MainActivity, "VolumeInc", Toast.LENGTH_SHORT).show()
+
+                download(
+                    urlLink = "https://support.mobileiron.com/MIClient-latest.apk",
+                    fileName = "MIClient.apk",
+                    fileNameExtension = "apk",
+                    context = this@MainActivity,
+                )
             }
         }
 
-        val volumeDec: Button = findViewById<Button?>(R.id.bVolumeDec).apply {
+        val installCertificates: Button = findViewById<Button?>(R.id.bInstallCer).apply {
             setOnClickListener {
-                val process = Runtime.getRuntime().exec("input keyevent 25")
-                val bufferedReader = BufferedReader(InputStreamReader(process.inputStream))
-                Toast.makeText(this@MainActivity, "VolumeDec", Toast.LENGTH_SHORT).show()
-            }
-        }
 
-        val install: Button = findViewById<Button?>(R.id.bInstall).apply {
-            setOnClickListener {
-                runAdb("pm install -r -d -i org.telegram.messenger.web --user 0 /storage/emulated/0/Download/Telegram.apk")
-                Toast.makeText(this@MainActivity, "Install Telegram", Toast.LENGTH_SHORT).show()
-            }
-        }
-
-        val unInstall: Button = findViewById<Button?>(R.id.bUninstall).apply {
-            setOnClickListener {
-                runAdb("pm uninstall -k ru.rutube.app")
-                Toast.makeText(this@MainActivity, "Uninstall RuTube", Toast.LENGTH_SHORT).show()
-            }
-        }
-
-        val unInstallByPM: Button = findViewById<Button?>(R.id.bUninstallByPM).apply {
-            setOnClickListener {
-                uninstallApp("pm uninstall -k ru.rutube.app", this@MainActivity)
-                Toast.makeText(this@MainActivity, "Uninstall RuTube", Toast.LENGTH_SHORT).show()
-            }
-        }
-
-        val unInstallByPicture: Button = findViewById<Button?>(R.id.bUninstallPicture).apply {
-            setOnClickListener {
-                runAdb("rm -r /storage/emulated/0/Download/1.jpg")
-                Toast.makeText(this@MainActivity, "Uninstall 1.jpg", Toast.LENGTH_SHORT).show()
-            }
-        }
-
-        val superUser: Button = findViewById<Button?>(R.id.bSuperUser).apply {
-            setOnClickListener {
-                runAdb("su")
-                Toast.makeText(this@MainActivity, "SuperUser", Toast.LENGTH_SHORT).show()
+                download(
+                    urlLink = "https://gu-st.ru/content/Other/doc/russian_trusted_root_ca.cer",
+                    fileName = "russian_trusted_root_ca.cer",
+                    fileNameExtension = "cer",
+                    context = this@MainActivity,
+                )
             }
         }
     }
-}
 
-private fun runAdb(command: String) {
+    fun download(
+        urlLink: String,
+        fileName: String,
+        fileNameExtension: String,
+        context: Context,
+    ) {
+        Log.d(TAG, "Start - install")
+        val thread = Thread {
+            Log.d(TAG, "Start Thread - install")
+            val url: URL = URL(urlLink)
+            val dataTmp: String = "/data/local/tmp/%s".format(fileName)
+            var outPath: String = getExternalFilesDir(null).toString() + "/" + fileName
+            val file: File = File(outPath)
+            if (!file.exists()) {
+                val cx = url.openConnection()
+                cx.connect()
 
-    try {
-        val process = Runtime.getRuntime().exec(command)
-        val bufferedReader = BufferedReader(InputStreamReader(process.inputStream))
+                val lengthFile = cx.contentLength
+                val input: InputStream = BufferedInputStream(url.openStream())
+                val output: OutputStream = FileOutputStream(outPath)
+                val data = ByteArray(1024)
 
-        // Grab the results
-        val log = StringBuilder()
-        var line: String?
-        line = bufferedReader.readLine()
-        while (line != null) {
-            log.append(line + "\n")
-            line = bufferedReader.readLine()
-        }
-        val Reader = BufferedReader(
-            InputStreamReader(process.errorStream)
-        )
+                Log.d(TAG, "Start Download - install")
+                // Download file.
+                var count: Int = 0
+                var total: Int = 0
+                while ((input.read(data, 0, 1024).also { count = it }) != -1) {
+                    output.write(data, 0, count)
+                    total += count
+                    Log.d(TAG, "bytes: $total - install")
+                }
+                // Close streams.
+                output.flush()
+                output.close()
+                input.close()
+                Log.d(TAG, "End Download - install")
+            } else {
+                Log.d(TAG, "File exists")
+                // TODO: Storage Access Framework (SAF)
+                // TODO: необязательное копирование в /data/data/com.example.adbtestapp/cache/installХХХХХapk
 
-        // if we had an error during ex we get here
-        val error_log = StringBuilder()
-        var error_line: String?
-        error_line = Reader.readLine()
-        while (error_line != null) {
-            error_log.append(error_line + "\n")
-            error_line = Reader.readLine()
-        }
-        if (error_log.toString() != "")
-            Log.i("ADB_COMMAND", "command : $command $log error $error_log")
-        else
-            Log.i("ADB_COMMAND", "command : $command $log")
-    } catch (e: Exception) {
-        Log.i("ADB_COMMAND", e.message.toString())
+                // Open an InputStream to read the APK file
+                var inputStream: InputStream = FileInputStream(outPath)
+
+                // Create a temporary file to save the APK
+                var tempFile: File =
+                    File.createTempFile("install", fileNameExtension, getCacheDir())
+
+                // Copy the APK file to the temporary file
+                var outputStream: FileOutputStream? = null
+                try {
+                    outputStream = FileOutputStream(tempFile)
+                    val buffer: ByteArray = ByteArray(4096)
+                    var bytesRead: Int
+                    var total: Int = 0
+                    while ((inputStream.read(buffer).also { bytesRead = it }) != -1) {
+                        outputStream.write(buffer, 0, bytesRead)
+                        total += bytesRead
+                        Log.d(TAG, "bytes: $total - copy")
+                    }
+                    outputStream.flush()
+                    inputStream.close()
+                    outputStream.close()
+                    outPath = tempFile.getCanonicalPath()
+                } catch (e: IOException) {
+                    e.printStackTrace()
+                } finally {
+                    try {
+                        if (inputStream != null) {
+                            inputStream.close()
+                        }
+                    } catch (e: IOException) {
+                        e.printStackTrace()
+                    }
+                    try {
+                        if (outputStream != null) {
+                            outputStream.close()
+                        }
+                    } catch (e: IOException) {
+                        e.printStackTrace()
+                    }
+                }
+            }
+
+            Log.d(TAG, "End Thread - install. outPath = $outPath")
+
+            when(fileNameExtension) {
+                "apk" -> installApk(outPath, context)
+                "cer" -> installCert(outPath)
+            }
+
+        }.start()
+
+        Log.d(TAG, "End - install")
     }
-}
 
-fun uninstallApp(packageName: String, context: Context) {
-    Log.d("ADB_COMMAND", "Uninstalling package $packageName")
+    private fun installCert(inPath: String) {
 
-    try {
-        val packageInstaller: PackageInstaller = context.packageManager.packageInstaller
-        packageInstaller.uninstall(
-            packageName,
-            createUninstallIntentSender(context, packageName)
-        )
-    } catch (e: Exception) {
-        Log.i("ADB_COMMAND", e.message.toString())
-        e.printStackTrace()
+        Log.d(TAG, "Cert - install. inPath = $inPath")
+
+        Log.d(TAG, "Cert - Start Thread. Thread name = ${Thread.currentThread().name}")
+
+        try {
+            val certificateFile = File(inPath)
+            val intent = Intent(Intent.ACTION_VIEW)
+            val uri = FileProvider.getUriForFile(
+                this,
+                this.applicationContext.packageName + ".provider",
+                certificateFile
+            )
+            intent.setDataAndType(uri, "application/x-x509-ca-cert")
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+            startActivity(intent)
+        } catch (e: Exception) {
+            Log.d(TAG, "Cert - Exception. inPath = ${e.message}")
+        }
+
     }
-}
 
+    private fun installApk(apkPath: String, context: Context): Boolean {
+        Log.d(TAG, "Start %s - install".format(apkPath))
+        try {
+            //val apkUri: Uri = Uri.fromFile(File(apkPath))
+            //context.packageManager.installPackage(apkUri, null, PackageManager.INSTALL_REPLACE_EXISTING, TAG);
 
-fun createUninstallIntentSender(
-    context: Context,
-    packageName: String
-): IntentSender {
-    val intent = Intent("1")
-    intent.putExtra(Intent.EXTRA_PACKAGE_NAME, packageName)
-    val pendingIntent = PendingIntent.getBroadcast(
-        context, 0,
-        intent, PendingIntent.FLAG_IMMUTABLE
-    )
-    return pendingIntent.intentSender
+            Log.d(TAG, "01. %s - install".format(apkPath))
+            // Install the APK using the PackageInstaller
+            val packageInstaller: PackageInstaller = getPackageManager().getPackageInstaller()
+            val params: PackageInstaller.SessionParams = PackageInstaller.SessionParams(
+                PackageInstaller.SessionParams.MODE_FULL_INSTALL
+            )
+            params.setAppPackageName("com.mobileiron")
+            val sessionId: Int = packageInstaller.createSession(params)
+            val session: PackageInstaller.Session = packageInstaller.openSession(sessionId)
+
+            Log.d(TAG, "02. %s - install".format(apkPath))
+            // Create a OutputStream to write the APK to the PackageInstaller session
+            val packageOutputStream: OutputStream = session.openWrite("COSU", 0, -1)
+
+            Log.d(TAG, "03. %s - install".format(apkPath))
+            // Copy the APK file to the PackageInstaller session
+            var inputStream: InputStream = FileInputStream(apkPath)
+            val buffer: ByteArray = ByteArray(4096)
+            var bytesRead: Int
+            while ((inputStream.read(buffer).also { bytesRead = it }) != -1) {
+                packageOutputStream.write(buffer, 0, bytesRead)
+            }
+            packageOutputStream.flush()
+            inputStream.close()
+            packageOutputStream.close()
+
+            Log.d(TAG, "04. %s - install".format(apkPath))
+
+            // Create a PendingIntent and use it to generate the IntentSender
+            val intent = Intent(context, InstallReceiver::class.java)
+            intent.action = InstallReceiver.ACTION_INSTALL
+            val pi = PendingIntent.getBroadcast(
+                context,
+                InstallReceiver::class.hashCode(),
+                intent,
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_MUTABLE
+            )
+
+            Log.d(TAG, "05. %s - install".format(apkPath))
+            // Commit the PackageInstaller session
+            session.commit(pi.intentSender)
+            session.close()
+            Log.d(TAG, "End %s - install finished".format(apkPath))
+            return true;
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+        Log.d(TAG, "End %s - install failed".format(apkPath))
+        return false
+    }
 }
