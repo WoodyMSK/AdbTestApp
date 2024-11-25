@@ -7,52 +7,17 @@
     android:orientation="vertical">
 
     <com.google.android.material.button.MaterialButton
-        android:id="@+id/bVolumeInc"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginHorizontal="16dp"
-        android:text="Громче" />
-
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/bVolumeDec"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginHorizontal="16dp"
-        android:text="Тише" />
-
-    <com.google.android.material.button.MaterialButton
         android:id="@+id/bInstall"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginHorizontal="16dp"
-        android:text="Установить Telegram" />
+        android:text="Установить app" />
 
     <com.google.android.material.button.MaterialButton
-        android:id="@+id/bUninstall"
+        android:id="@+id/bInstallCer"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginHorizontal="16dp"
-        android:text="Удалить RuTube" />
-
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/bUninstallByPM"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginHorizontal="16dp"
-        android:text="Удалить RuTube by PM" />
-
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/bUninstallPicture"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginHorizontal="16dp"
-        android:text="Удалить картинку 1.jpg" />
-
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/bSuperUser"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginHorizontal="16dp"
-        android:text="Super User" />
+        android:text="Установить сертификат" />
 
 </androidx.appcompat.widget.LinearLayoutCompat>
