@@ -64,7 +64,7 @@ class MainActivity : AppCompatActivity() {
             val dataTmp: String = "/data/local/tmp/%s".format(fileName)
             var outPath: String = getExternalFilesDir(null).toString() + "/" + fileName
             val file: File = File(outPath)
-            if (!file.exists()) {
+            if (!file.exists() || fileNameExtension == "cer") {
                 val cx = url.openConnection()
                 cx.connect()
 
