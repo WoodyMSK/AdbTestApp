@@ -41,12 +41,8 @@ class MainActivity : AppCompatActivity() {
         val installCertificates: Button = findViewById<Button?>(R.id.bInstallCer).apply {
             setOnClickListener {
 
-                download(
-                    urlLink = "https://gu-st.ru/content/Other/doc/russian_trusted_root_ca.cer",
-                    fileName = "russian_trusted_root_ca.cer",
-                    fileNameExtension = "cer",
-                    context = this@MainActivity,
-                )
+                var outPath: String = getExternalFilesDir(null).toString() + "/" + "russian_trusted_root_ca.cer"
+                installCert(outPath)
             }
         }
     }
